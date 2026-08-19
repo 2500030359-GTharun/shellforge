@@ -4,9 +4,11 @@
 
 #include <readline/readline.h>
 
-#include "../include/lexer.h"
 #include "../include/token.h"
+#include "../include/lexer.h"
 #include "../include/history.h"
+#include "../include/parser.h"
+#include "../include/expand.h"
 
 int main(void)
 {
@@ -62,12 +64,15 @@ int main(void)
 
         /*
          * Store the command in history.
-         * This allows UP/DOWN arrow navigation.
+         * UP/DOWN arrow navigation is handled
+         * by readline().
          */
         history_add_command(input);
 
         /*
-         * Tokenize the command
+         * ============================
+         * LEXER
+         * ============================
          */
         token_list list;
 
@@ -77,6 +82,33 @@ int main(void)
          * Display generated tokens
          */
         token_print(&list);
+
+        /*
+         * ============================
+         * PARSER
+         * ============================
+         */
+        pipeline_t pipeline;
+
+        if (parse(&list, &pipeline))
+        {
+            /*
+             * ============================
+             * EXPAND
+             * ============================
+             */
+            expand_variables(&pipeline);
+
+            /*
+             * Display parsed pipeline
+             */
+            pipeline_print(&pipeline);
+
+            /*
+             * Free parser memory
+             */
+            pipeline_free(&pipeline);
+        }
 
         free(input);
     }
