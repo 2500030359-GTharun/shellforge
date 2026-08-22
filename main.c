@@ -36,13 +36,15 @@ int main(void)
 
         while (token != NULL && argc < MAX_ARGS - 1)
         {
-            argv[argc++] = token;
+            argv[argc] = token;
+            argc++;
+
             token = strtok(NULL, " ");
         }
 
         argv[argc] = NULL;
 
-        /* Built-in command */
+        /* Check for built-in command */
         if (is_builtin(argv[0]))
         {
             int result = execute_builtin(argv);
@@ -53,7 +55,7 @@ int main(void)
             continue;
         }
 
-        /* External command */
+        /* Execute external command */
         pid_t pid = fork();
 
         if (pid < 0)
