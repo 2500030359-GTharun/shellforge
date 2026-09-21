@@ -1,13 +1,12 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <sys/wait.h>
 
-#include "builtin.h"
+#include "lexer.h"
+#include "parser.h"
+#include "expand.h"
+#include "executor.h"
 
 #define MAX_INPUT 1024
-#define MAX_ARGS 64
 
 int main(void)
 {
@@ -29,48 +28,30 @@ int main(void)
         if (strlen(input) == 0)
             continue;
 
-        char *argv[MAX_ARGS];
-        int argc = 0;
+        /* Lexer */
+        token_list tokens;
+        token_list_init(&tokens);
 
-        char *token = strtok(input, " ");
+        lexer(input, &tokens);
 
-        while (token != NULL && argc < MAX_ARGS - 1)
+        /* Parser */
+        pipeline_t pipeline;
+        pipeline_init(&pipeline);
+
+        if (!parse(&tokens, &pipeline))
         {
-            argv[argc++] = token;
-            token = strtok(NULL, " ");
-        }
-
-        argv[argc] = NULL;
-
-        /* Built-in command */
-        if (is_builtin(argv[0]))
-        {
-            int result = execute_builtin(argv);
-
-            if (result == -1)
-                break;
-
+            pipeline_free(&pipeline);
             continue;
         }
 
-        /* External command */
-        pid_t pid = fork();
+        /* Variable expansion */
+        expand_variables(&pipeline);
 
-        if (pid < 0)
-        {
-            perror("fork");
-            continue;
-        }
+        /* Executor */
+        execute_pipeline(&pipeline);
 
-        if (pid == 0)
-        {
-            execvp(argv[0], argv);
-
-            perror("exec");
-            exit(EXIT_FAILURE);
-        }
-
-        waitpid(pid, NULL, 0);
+        /* Free parsed pipeline */
+        pipeline_free(&pipeline);
     }
 
     return 0;

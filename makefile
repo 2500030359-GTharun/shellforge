@@ -1,4 +1,4 @@
-CC = gcc
+	CC = gcc
 CFLAGS = -Wall -Wextra -std=c11 -Iinclude
 LDFLAGS = -lreadline
 
@@ -10,15 +10,16 @@ OBJS = src/main.o \
        src/history.o \
        src/parser.o \
        src/expand.o \
-       src/builtin.o
+       src/builtin.o\
+       src/executor.o
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) $(OBJS) -o $(TARGET) $(LDFLAGS)
+		$(CC) $(OBJS) -o $(TARGET) $(LDFLAGS)
 
 src/%.o: src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+		$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJS) $(TARGET)
+		rm -f $(OBJS) $(TARGET)
