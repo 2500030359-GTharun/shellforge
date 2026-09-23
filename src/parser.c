@@ -54,8 +54,7 @@ static int add_argument(command_t *command,
         return 0;
     }
 
-    command->argv[command->argc] =
-        copy_string(text);
+    command->argv[command->argc] = copy_string(text);
 
     if (command->argv[command->argc] == NULL)
     {
@@ -118,8 +117,7 @@ int parse(const token_list *tokens,
 {
     pipeline_init(pipeline);
 
-    if (tokens == NULL ||
-        tokens->count == 0)
+    if (tokens == NULL || tokens->count == 0)
     {
         return 0;
     }
@@ -128,9 +126,7 @@ int parse(const token_list *tokens,
 
     pipeline->command_count = 1;
 
-    for (int i = 0;
-         i < tokens->count;
-         i++)
+    for (int i = 0; i < tokens->count; i++)
     {
         const token *t = &tokens->tokens[i];
 
@@ -144,8 +140,7 @@ int parse(const token_list *tokens,
              */
             case TOKEN_WORD:
 
-                if (!add_argument(command,
-                                  t->text))
+                if (!add_argument(command, t->text))
                 {
                     pipeline_free(pipeline);
                     return 0;
@@ -325,45 +320,33 @@ void pipeline_print(const pipeline_t *pipeline)
 
         printf("------------------------------\n");
 
-        printf("Arguments\n");
+        printf("Arguments: ");
 
-        for (int j = 0;
-             j < command->argc;
-             j++)
+        for (int j = 0; j < command->argc; j++)
         {
-            printf("argv[%d] = %s\n",
-                   j,
-                   command->argv[j]);
+            printf("%s ", command->argv[j]);
         }
+
+        printf("\n");
 
         if (command->input != NULL)
-        {
-            printf("Input    : %s\n",
-                   command->input);
-        }
-        else
-        {
-            printf("Input    : None\n");
-        }
+            printf("Input: %s\n", command->input);
 
         if (command->output != NULL)
         {
-            printf("Output   : %s\n",
-                   command->output);
+            printf("Output: %s", command->output);
+
+            if (command->append)
+                printf(" (append)");
+
+            printf("\n");
         }
-        else
-        {
-            printf("Output   : None\n");
-        }
 
-        printf("Append   : %s\n",
-               command->append ? "Yes" : "No");
-
-        printf("Background : %s\n",
-               command->background ? "Yes" : "No");
-
-        printf("==============================\n");
+        printf("Background: %d\n",
+               command->background);
     }
+
+    printf("==============================\n");
 }
 
 void pipeline_free(pipeline_t *pipeline)
@@ -379,12 +362,11 @@ void pipeline_free(pipeline_t *pipeline)
              j < command->argc;
              j++)
         {
-            if (command->argv[j] != NULL)
-            {
-                free(command->argv[j]);
-                command->argv[j] = NULL;
-            }
+            free(command->argv[j]);
+            command->argv[j] = NULL;
         }
+
+        command->argc = 0;
 
         if (command->input != NULL)
         {
@@ -398,7 +380,8 @@ void pipeline_free(pipeline_t *pipeline)
             command->output = NULL;
         }
 
-        command->argc = 0;
+        command->append = 0;
+        command->background = 0;
     }
 
     pipeline->command_count = 0;

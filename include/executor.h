@@ -6,5 +6,6 @@
 int execute_external(char **argv);
 int execute_command(command_t *command);
 int execute_pipeline(pipeline_t *pipeline);
+void setup_background_handler(void);
 
 #endif
